@@ -1,10 +1,15 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace MovieTheater
 {
@@ -40,10 +45,29 @@ namespace MovieTheater
             }
             else
             {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                app.UseExceptionHandler("/Home/Error");
             }
+
+            app.UseExceptionHandler(appBuilder =>
+            {
+                appBuilder.Use(async (context, next) =>
+                {
+                    var excHandler = context.Features.Get<IExceptionHandlerFeature>();
+                    if (context.Request.GetTypedHeaders().Accept.Any(header => header.MediaType == "application/json"))
+                    {
+                        var jsonString = string.Format("{{\"error\":\"{0}\"}}", excHandler.Error.Message);
+                        context.Response.ContentType = new MediaTypeHeaderValue("application/json").ToString();
+                        await context.Response.WriteAsync(jsonString, Encoding.UTF8);
+                    }
+                    else
+                    {
+                        //I haven't figured out a better way of signally ExceptionHandlerMiddleware that we can't handle the exception
+                        //But this will do the trick of letting the other error handlers to intervene
+                        //as the ExceptionHandlerMiddleware class will swallow this exception and rethrow the original one
+                        throw excHandler.Error;
+                    }
+                });
+            });
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

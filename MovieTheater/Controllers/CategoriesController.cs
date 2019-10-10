@@ -57,6 +57,65 @@ namespace MovieTheater.Controllers
             return category;
         }
 
+        // GET: api/Categories/5
+        [HttpGet("{id}/movies")]
+        public async Task<ActionResult<IEnumerable<Movie>>> GetCategoryMovies(int id)
+        {
+            List<Movie> movies = _context.Categories
+                .Where(cat => cat.Id == id)
+                .Select(cat => cat.Movies)
+                .FirstOrDefault().ToList();
+
+            if (movies == null)
+            {
+                return NotFound();
+            }
+
+            return movies;
+        }
+
+        // GET: api/Categories/5
+        [HttpGet("{id}/movies/{movieID}")]
+        public async Task<ActionResult<Movie>> GetCategoryMovie(int id, int movieID)
+        {
+            Movie movie = _context.Categories
+                .Where(cat => cat.Id == id)
+                .Select(cat => cat.Movies)
+                .FirstOrDefault().ToList()
+                .Where(mov => mov.Id == movieID)
+                .FirstOrDefault();
+
+            if (movie == null)
+            {
+                return NotFound();
+            }
+
+            return movie;
+        }
+
+
+
+        // GET: api/Movies/5
+        [HttpGet("{id}/movies/{movieID}/review")]
+        public async Task<ActionResult<Review>> GetMovieReview(int id, int movieID)
+        {
+            Review review = _context.Categories
+                .Where(cat => cat.Id == id)
+                .Select(cat => cat.Movies)
+                .FirstOrDefault().ToList()
+                .Where(mov => mov.Id == movieID)
+                .Select(mov => mov.Review)
+                .FirstOrDefault();
+
+            if (review == null)
+            {
+                return NotFound();
+            }
+
+            return review;
+        }
+
+
         // PUT: api/Categories/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCategory(int id, Category category)

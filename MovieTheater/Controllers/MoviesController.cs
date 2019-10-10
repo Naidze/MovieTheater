@@ -66,6 +66,23 @@ namespace MovieTheater.Controllers
             return movie;
         }
 
+        // GET: api/Movies/5
+        [HttpGet("{id}/review")]
+        public async Task<ActionResult<Review>> GetMovieReview(int id)
+        {
+            Review review = _context.Movies
+                .Where(mov => mov.Id == id)
+                .Select(mov => mov.Review)
+                .FirstOrDefault();
+
+            if (review == null)
+            {
+                return NotFound();
+            }
+
+            return review;
+        }
+
         // PUT: api/Movies/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMovie(int id, Movie movie)
