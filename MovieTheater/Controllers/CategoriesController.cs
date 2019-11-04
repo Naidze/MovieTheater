@@ -24,64 +24,103 @@ namespace MovieTheater.Controllers
 
         // GET: api/Categories
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
+        public ActionResult<IEnumerable<object>> GetCategories()
         {
-            return await _context.Categories.Select(cat => new Category
-            {
-                Id = cat.Id,
-                Title = cat.Title,
-                Description = cat.Description,
-                Movies = cat.Movies.ToList()
-            }).ToListAsync();
+            var categories = _context.Categories
+                .Include(cat => cat.Movies)
+                .Select(cat => new
+                {
+                    cat.Id,
+                    cat.Title,
+                    cat.Description,
+                    Movies = cat.Movies
+                        .Select(mov => new
+                        {
+                            mov.Id,
+                            mov.Author,
+                            mov.Title,
+                            mov.Description,
+                            mov.Year,
+                            mov.Review
+                        })
+                });
+            return Ok(categories);
         }
 
         // GET: api/Categories/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Category>> GetCategory(int id)
+        public IActionResult GetCategory(int id)
         {
-            Category category = _context.Categories
+            var category = _context.Categories
                 .Where(cat => cat.Id == id)
-                .Select(cat => new Category
-            {
-                Id = cat.Id,
-                Title = cat.Title,
-                Description = cat.Description,
-                Movies = cat.Movies.ToList()
-            }).FirstOrDefault();
+                .Select(cat => new
+                {
+                    cat.Id,
+                    cat.Title,
+                    cat.Description,
+                    Movies = cat.Movies
+                        .Select(mov => new
+                        {
+                            mov.Id,
+                            mov.Author,
+                            mov.Title,
+                            mov.Description,
+                            mov.Year,
+                            mov.Review
+                        })
+                }).FirstOrDefault();
 
             if (category == null)
             {
                 return NotFound();
             }
 
-            return category;
+            return Ok(category);
         }
 
         // GET: api/Categories/5
         [HttpGet("{id}/movies")]
-        public async Task<ActionResult<IEnumerable<Movie>>> GetCategoryMovies(int id)
+        public ActionResult<IEnumerable<object>> GetCategoryMovies(int id)
         {
-            List<Movie> movies = _context.Categories
+            var movies = _context.Categories
                 .Where(cat => cat.Id == id)
-                .Select(cat => cat.Movies)
-                .FirstOrDefault().ToList();
+                .Select(cat => cat.Movies.Select(mov => new
+                {
+                    mov.Id,
+                    mov.Author,
+                    mov.Title,
+                    mov.Description,
+                    mov.Year,
+                    mov.Review
+                }))
+                .FirstOrDefault();
 
             if (movies == null)
             {
                 return NotFound();
             }
 
-            return movies;
+            return Ok(movies);
         }
 
         // GET: api/Categories/5
         [HttpGet("{id}/movies/{movieID}")]
-        public async Task<ActionResult<Movie>> GetCategoryMovie(int id, int movieID)
+        public ActionResult<object> GetCategoryMovie(int id, int movieID)
         {
-            Movie movie = _context.Categories
+            var movie = _context.Categories
                 .Where(cat => cat.Id == id)
-                .Select(cat => cat.Movies)
-                .FirstOrDefault().ToList()
+                .Select(cat => cat.Movies
+                    .Select(mov => new
+                    {
+                        mov.Id,
+                        mov.Author,
+                        mov.Title,
+                        mov.Description,
+                        mov.Year,
+                        mov.Review
+                    })
+                )
+                .FirstOrDefault()
                 .Where(mov => mov.Id == movieID)
                 .FirstOrDefault();
 
@@ -90,29 +129,35 @@ namespace MovieTheater.Controllers
                 return NotFound();
             }
 
-            return movie;
+            return Ok(movie);
         }
 
 
 
         // GET: api/Movies/5
         [HttpGet("{id}/movies/{movieID}/review")]
-        public async Task<ActionResult<Review>> GetMovieReview(int id, int movieID)
+        public ActionResult<object> GetMovieReview(int id, int movieID)
         {
-            Review review = _context.Categories
+            var review = _context.Categories
                 .Where(cat => cat.Id == id)
-                .Select(cat => cat.Movies)
-                .FirstOrDefault().ToList()
+                .Select(cat => cat.Movies
+                    .Select(mov => new
+                    {
+                        mov.Id,
+                        mov.Review
+                    })
+                )
+                .FirstOrDefault()
                 .Where(mov => mov.Id == movieID)
-                .Select(mov => mov.Review)
-                .FirstOrDefault();
+                .FirstOrDefault()
+                .Review;
 
             if (review == null)
             {
                 return NotFound();
             }
 
-            return review;
+            return Ok(review);
         }
 
 

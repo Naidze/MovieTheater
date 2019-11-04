@@ -24,37 +24,36 @@ namespace MovieTheater.Controllers
 
         // GET: api/Movies
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
+        public ActionResult<IEnumerable<object>> GetMovies()
         {
-            return await _context.Movies
-                .Select(mov => new Movie
+            var movies = _context.Movies
+                .Select(mov => new
                 {
-                    Id = mov.Id,
-                    Author = mov.Author,
-                    Title = mov.Title,
-                    Description = mov.Description,
-                    Rating = mov.Rating,
-                    Category = mov.Category,
-                    Review = mov.Review
-                })
-                .ToListAsync();
+                    mov.Id,
+                    mov.Author,
+                    mov.Title,
+                    mov.Description,
+                    mov.Year,
+                    mov.Review
+                });
+
+            return Ok(movies);
         }
 
         // GET: api/Movies/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Movie>> GetMovie(int id)
+        public ActionResult<object> GetMovie(int id)
         {
             var movie = _context.Movies
                 .Where(mov => mov.Id == id)
-                .Select(mov => new Movie
+                .Select(mov => new
                 {
-                    Id = mov.Id,
-                    Author = mov.Author,
-                    Title = mov.Title,
-                    Description = mov.Description,
-                    Rating = mov.Rating,
-                    Category = mov.Category,
-                    Review = mov.Review
+                    mov.Id,
+                    mov.Author,
+                    mov.Title,
+                    mov.Description,
+                    mov.Year,
+                    mov.Review
                 })
                 .FirstOrDefault();
 
@@ -63,12 +62,12 @@ namespace MovieTheater.Controllers
                 return NotFound();
             }
 
-            return movie;
+            return Ok(movie);
         }
 
         // GET: api/Movies/5
         [HttpGet("{id}/review")]
-        public async Task<ActionResult<Review>> GetMovieReview(int id)
+        public ActionResult<object> GetMovieReview(int id)
         {
             Review review = _context.Movies
                 .Where(mov => mov.Id == id)
@@ -80,7 +79,7 @@ namespace MovieTheater.Controllers
                 return NotFound();
             }
 
-            return review;
+            return Ok(review);
         }
 
         // PUT: api/Movies/5
