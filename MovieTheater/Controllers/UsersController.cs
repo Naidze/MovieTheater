@@ -17,11 +17,13 @@ namespace MovieTheater.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
+        private readonly IAuthService _authService;
 
-        public UsersController(IUserRepository userRepository, IUserService userService)
+        public UsersController(IUserRepository userRepository, IUserService userService, IAuthService authService)
         {
             _userRepository = userRepository;
             _userService = userService;
+            _authService = authService;
         }
 
         [HttpPost("login")]
@@ -30,8 +32,8 @@ namespace MovieTheater.Controllers
             if (!await _userRepository.UserExists(model.UserName))
                 return StatusCode(401, "You have entered an invalid username or password!");
 
-            //if (await _userService.Login(model))
-            //    return Ok(_userService.RequestToken(model.UserName));
+            if (await _userService.Login(model))
+                return Ok(_authService.RequestToken(model));
             return StatusCode(401, "You have entered an invalid username or password!");
         }
 

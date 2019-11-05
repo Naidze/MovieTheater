@@ -2,60 +2,48 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheater;
+using MovieTheater.Helpers;
 using MovieTheater.Models;
 using MovieTheater.Models.ViewModels;
+using MovieTheater.Repositories;
 
 namespace MovieTheater.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = UserRoleDefaults.Admin)]
     public class MoviesController : ControllerBase
     {
         private readonly MovieContext _context;
+        private readonly IMovieRepository _movieRepository;
 
-        public MoviesController(MovieContext context)
+        public MoviesController(IMovieRepository movieRepository)
         {
-            _context = context;
+            _context = new MovieContext();
+            _movieRepository = movieRepository;
         }
 
         // GET: api/Movies
         [HttpGet]
-        public ActionResult<IEnumerable<object>> GetMovies()
+        public ActionResult<IEnumerable<Movie>> GetMovies()
         {
-            var movies = _context.Movies
-                .Select(mov => new
-                {
-                    mov.Id,
-                    mov.Author,
-                    mov.Title,
-                    mov.Description,
-                    mov.Year,
-                    mov.Review
-                });
-
+            var movies = _movieRepository.GetAllMovies();
             return Ok(movies);
         }
 
         // GET: api/Movies/5
         [HttpGet("{id}")]
-        public ActionResult<object> GetMovie(int id)
+        public ActionResult<Movie> GetMovie(int id)
         {
-            var movie = _context.Movies
-                .Where(mov => mov.Id == id)
-                .Select(mov => new
-                {
-                    mov.Id,
-                    mov.Author,
-                    mov.Title,
-                    mov.Description,
-                    mov.Year,
-                    mov.Review
-                })
-                .FirstOrDefault();
+            if (!_movieRepository.MovieExists(id))
+                return NotFound("Movie with id: '" + id + "' does not exist.");
+
+            Movie movie = _movieRepository.GetMovie(id);
 
             if (movie == null)
             {
@@ -67,19 +55,19 @@ namespace MovieTheater.Controllers
 
         // GET: api/Movies/5
         [HttpGet("{id}/review")]
-        public ActionResult<object> GetMovieReview(int id)
+        public ActionResult<Review> GetMovieReview(int id)
         {
-            Review review = _context.Movies
-                .Where(mov => mov.Id == id)
-                .Select(mov => mov.Review)
-                .FirstOrDefault();
+            if (!_movieRepository.MovieExists(id))
+                return NotFound("Movie with id: '" + id + "' does not exist.");
 
-            if (review == null)
+            Movie movie = _movieRepository.GetMovie(id);
+
+            if (movie.Review == null)
             {
                 return NotFound();
             }
 
-            return Ok(review);
+            return Ok(movie.Review);
         }
 
         // PUT: api/Movies/5

@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MovieTheater.Helpers;
 using MovieTheater.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MovieTheater.Repositories
@@ -16,15 +18,20 @@ namespace MovieTheater.Repositories
             _context = new MovieContext();
         }
 
-        public IEnumerable<Category> GetAllCategories()
+        public IEnumerable<Category> GetAllCategories(ClaimsPrincipal user)
         {
-            return _context.Categories
+            var categories = _context.Categories.AsQueryable();
+            if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
+                categories = categories.Where(cat => cat.User.UserName.Equals(user.Identity.Name));
+
+            return categories
                 .Include(cat => cat.Movies)
                 .Select(cat => new Category
                 {
                     Id = cat.Id,
                     Title = cat.Title,
                     Description = cat.Description,
+                    UserId = cat.UserId,
                     Movies = cat.Movies.Select(mov => new Movie
                     {
                         Id = mov.Id,
@@ -39,9 +46,13 @@ namespace MovieTheater.Repositories
                 });
         }
 
-        public Category GetCategory(int id)
+        public Category GetCategory(ClaimsPrincipal user, int id)
         {
-            return _context.Categories
+            var categories = _context.Categories.AsQueryable();
+            if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
+                categories = categories.Where(cat => cat.User.UserName.Equals(user.Identity.Name));
+
+            return categories
                 .Where(cat => cat.Id == id)
                 .Include(cat => cat.Movies)
                 .Select(cat => new Category
@@ -49,6 +60,7 @@ namespace MovieTheater.Repositories
                     Id = cat.Id,
                     Title = cat.Title,
                     Description = cat.Description,
+                    UserId = cat.UserId,
                     Movies = cat.Movies.Select(mov => new Movie
                     {
                         Id = mov.Id,

@@ -84,18 +84,13 @@ namespace MovieTheater
         public void AddScopes(IServiceCollection services)
         {
             // Services
-            services.AddScoped<ICategoryService, CategoryService>();
-            //services.AddScoped<ICinemasService, CinemasService>();
-            //services.AddScoped<IMoviesService, MoviesService>();
-            //services.AddScoped<IQuotesService, QuotesService>();
-            //services.AddScoped<IReviewsService, ReviewsService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
 
             // Repositories
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            //services.AddScoped<ICinemasRepository, CinemasRepository>();
-            //services.AddScoped<IMoviesRepository, InjuryRepository>();
+            services.AddScoped<ICinemaRepository, CinemaRepository>();
+            services.AddScoped<IMovieRepository, MovieRepository>();
             //services.AddScoped<IQuotesRepository, LeaderboardRepository>();
             //services.AddScoped<IReviewsRepository, LineupRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
@@ -146,14 +141,17 @@ namespace MovieTheater
                     template: "{controller}/{action=Index}/{id?}");
             });
 
-            app.UseSpa(spa =>
+            app.MapWhen(x => !x.Request.Path.Value.StartsWith("/api"), builder =>
             {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment())
+                builder.UseSpa(spa =>
                 {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
+                    spa.Options.SourcePath = "ClientApp";
+
+                    if (env.IsDevelopment())
+                    {
+                        spa.UseReactDevelopmentServer(npmScript: "start");
+                    }
+                });
             });
 
             CreateRoles(serviceProvider).Wait();

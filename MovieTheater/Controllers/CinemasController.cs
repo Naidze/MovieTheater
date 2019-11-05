@@ -2,38 +2,43 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheater;
 using MovieTheater.Models;
 using MovieTheater.Models.ViewModels;
+using MovieTheater.Repositories;
 
 namespace MovieTheater.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CinemasController : ControllerBase
     {
         private readonly MovieContext _context;
+        private readonly ICinemaRepository _cinemaRepository;
 
-        public CinemasController(MovieContext context)
+        public CinemasController(ICinemaRepository cinemaRepository)
         {
-            _context = context;
+            _context = new MovieContext();
+            _cinemaRepository = cinemaRepository;
         }
 
         // GET: api/Cinemas
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Cinema>>> GetCinemas()
         {
-            return await _context.Cinemas.ToListAsync();
+            return Ok(await _cinemaRepository.GetAllCinemas());
         }
 
         // GET: api/Cinemas/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Cinema>> GetCinema(int id)
         {
-            var cinema = await _context.Cinemas.FindAsync(id);
+            var cinema = await _cinemaRepository.GetCinema(id);
 
             if (cinema == null)
             {
