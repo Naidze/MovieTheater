@@ -11,6 +11,6 @@ namespace MovieTheater.Models
         public string Title { get; set; }
         public string Description { get; set; }
 
-        public virtual ICollection<Movie> Movies { get; set; }
+        public virtual IEnumerable<Movie> Movies { get; set; }
     }
 }

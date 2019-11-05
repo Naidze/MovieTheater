@@ -1,49 +1,36 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MovieTheater.Helpers;
+using MovieTheater.Models;
+using MovieTheater.Models.ViewModels;
+using MovieTheater.Repositories;
+using MovieTheater.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MovieTheater;
-using MovieTheater.Models;
-using MovieTheater.Models.ViewModels;
 
 namespace MovieTheater.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = UserRoleDefaults.Admin)]
     public class CategoriesController : ControllerBase
     {
         private readonly MovieContext _context;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public CategoriesController(MovieContext context)
+        public CategoriesController(ICategoryRepository categoryRepository)
         {
-            _context = context;
+            _context = new MovieContext();
+            _categoryRepository = categoryRepository;
         }
 
         // GET: api/Categories
         [HttpGet]
         public ActionResult<IEnumerable<object>> GetCategories()
         {
-            var categories = _context.Categories
-                .Include(cat => cat.Movies)
-                .Select(cat => new
-                {
-                    cat.Id,
-                    cat.Title,
-                    cat.Description,
-                    Movies = cat.Movies
-                        .Select(mov => new
-                        {
-                            mov.Id,
-                            mov.Author,
-                            mov.Title,
-                            mov.Description,
-                            mov.Year,
-                            mov.Review
-                        })
-                });
+            var categories = _categoryRepository.GetAllCategories();
             return Ok(categories);
         }
 
@@ -51,82 +38,47 @@ namespace MovieTheater.Controllers
         [HttpGet("{id}")]
         public IActionResult GetCategory(int id)
         {
-            var category = _context.Categories
-                .Where(cat => cat.Id == id)
-                .Select(cat => new
-                {
-                    cat.Id,
-                    cat.Title,
-                    cat.Description,
-                    Movies = cat.Movies
-                        .Select(mov => new
-                        {
-                            mov.Id,
-                            mov.Author,
-                            mov.Title,
-                            mov.Description,
-                            mov.Year,
-                            mov.Review
-                        })
-                }).FirstOrDefault();
+            if (!_categoryRepository.CategoryExists(id))
+                return NotFound("Category with id: " + id + "does not exist.");
 
-            if (category == null)
-            {
-                return NotFound();
-            }
+            var category = _categoryRepository.GetCategory(id);
 
             return Ok(category);
         }
 
         // GET: api/Categories/5
         [HttpGet("{id}/movies")]
-        public ActionResult<IEnumerable<object>> GetCategoryMovies(int id)
+        public ActionResult<IEnumerable<Movie>> GetCategoryMovies(int id)
         {
-            var movies = _context.Categories
-                .Where(cat => cat.Id == id)
-                .Select(cat => cat.Movies.Select(mov => new
-                {
-                    mov.Id,
-                    mov.Author,
-                    mov.Title,
-                    mov.Description,
-                    mov.Year,
-                    mov.Review
-                }))
-                .FirstOrDefault();
+            if (!_categoryRepository.CategoryExists(id))
+                return NotFound("Category with id: " + id + "does not exist.");
 
-            if (movies == null)
+            var category = _categoryRepository.GetCategory(id);
+
+            if (category.Movies == null)
             {
-                return NotFound();
+                return NotFound("Movies for category: " + id + " was not found.");
             }
 
-            return Ok(movies);
+            return Ok(category.Movies);
         }
 
         // GET: api/Categories/5
         [HttpGet("{id}/movies/{movieID}")]
-        public ActionResult<object> GetCategoryMovie(int id, int movieID)
+        public ActionResult<Movie> GetCategoryMovie(int id, int movieID)
         {
-            var movie = _context.Categories
-                .Where(cat => cat.Id == id)
-                .Select(cat => cat.Movies
-                    .Select(mov => new
-                    {
-                        mov.Id,
-                        mov.Author,
-                        mov.Title,
-                        mov.Description,
-                        mov.Year,
-                        mov.Review
-                    })
-                )
-                .FirstOrDefault()
+            if (!_categoryRepository.CategoryExists(id))
+                return NotFound("Category with id: " + id + "does not exist.");
+
+            Category category = _categoryRepository.GetCategory(id);
+
+            Movie movie = category.Movies
                 .Where(mov => mov.Id == movieID)
                 .FirstOrDefault();
 
             if (movie == null)
             {
-                return NotFound();
+                return NotFound("Movie with id: " + movieID + " in category with id: " + id + " was not found");
             }
 
             return Ok(movie);
@@ -154,7 +106,7 @@ namespace MovieTheater.Controllers
 
             if (review == null)
             {
-                return NotFound();
+                return NotFound("Review for movie with id: " + movieID + " in category with id: " + id + " was not found");
             }
 
             return Ok(review);

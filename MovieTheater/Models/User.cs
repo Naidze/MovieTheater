@@ -8,7 +8,7 @@ namespace MovieTheater.Models
 {
     public class User : IdentityUser
     {
-        public virtual ICollection<Category> Categories { get; set; }
-        public virtual ICollection<Cinema> Cinemas { get; set; }
+        public virtual IEnumerable<Category> Categories { get; set; }
+        public virtual IEnumerable<Cinema> Cinemas { get; set; }
     }
 }
