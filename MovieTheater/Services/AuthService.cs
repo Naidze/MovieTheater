@@ -62,7 +62,7 @@ namespace MovieTheater.Services
             var token = new JwtSecurityToken(
                     issuer: "naidzinavicius.com",
                     audience: "naidzinavicius.com",
-                    expires: DateTime.Now.AddMinutes(1),
+                    expires: DateTime.Now.AddDays(1),
                     signingCredentials: signingCredentials,
                     claims: claims
                 );

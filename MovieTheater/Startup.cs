@@ -66,6 +66,7 @@ namespace MovieTheater
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
+                        ClockSkew = TimeSpan.Zero,
                         ValidIssuer = "naidzinavicius.com",
                         ValidAudience = "naidzinavicius.com",
                         IssuerSigningKey = symmetricSecuriytKey
