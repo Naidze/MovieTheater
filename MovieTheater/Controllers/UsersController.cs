@@ -48,6 +48,10 @@ namespace MovieTheater.Controllers
             if (!Regex.IsMatch(model.UserName, @"^.{4,11}$"))
                 return StatusCode(422, "Username must be between 4 and 11 symbols long!");
 
+            // Check if email is valid
+            if (!Regex.IsMatch(model.Email, @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"))
+                return StatusCode(422, "Entered email is invalid!");
+
             IdentityResult result = await _userService.Register(model);
             if (!result.Succeeded)
             {

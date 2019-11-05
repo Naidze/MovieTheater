@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using MovieTheater;
 using MovieTheater.Models;
 using MovieTheater.Models.ViewModels;
+using MovieTheater.Repositories;
 
 namespace MovieTheater.Controllers
 {
@@ -16,10 +17,12 @@ namespace MovieTheater.Controllers
     public class ReviewsController : ControllerBase
     {
         private readonly MovieContext _context;
+        private readonly IMovieRepository _movieRepository;
 
-        public ReviewsController(MovieContext context)
+        public ReviewsController(IMovieRepository movieRepository)
         {
-            _context = context;
+            _context = new MovieContext();
+            _movieRepository = movieRepository;
         }
 
         // GET: api/Reviews
@@ -77,12 +80,20 @@ namespace MovieTheater.Controllers
         [HttpPost]
         public async Task<ActionResult<Review>> PostReview(CreateReviewViewModel model)
         {
-            Movie movie = _context.Movies.Where(mov => mov.Id == model.MovieID).FirstOrDefault();
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Movie movie = _movieRepository.GetMovie(User, model.MovieID);
+            if (movie == null)
+                return NotFound("Movie " + movie.Id + " not found.");
+
             Review review = new Review
             {
                 Stars = model.Stars,
                 Comment = model.Comment,
-                Movie = movie
+                MovieID = movie.Id
             };
             _context.Reviews.Add(review);
             await _context.SaveChangesAsync();

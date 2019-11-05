@@ -2,15 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MovieTheater.Repositories
 {
     public interface IMovieRepository
     {
-        IEnumerable<Movie> GetAllMovies();
+        IEnumerable<Movie> GetAllMovies(ClaimsPrincipal user);
 
-        Movie GetMovie(int id);
+        Movie GetMovie(ClaimsPrincipal user, int id);
 
         bool MovieExists(int id);
     }

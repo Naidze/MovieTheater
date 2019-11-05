@@ -31,14 +31,14 @@ namespace MovieTheater.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Cinema>>> GetCinemas()
         {
-            return Ok(await _cinemaRepository.GetAllCinemas());
+            return Ok(await _cinemaRepository.GetAllCinemas(User));
         }
 
         // GET: api/Cinemas/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Cinema>> GetCinema(int id)
+        public ActionResult<Cinema> GetCinema(int id)
         {
-            var cinema = await _cinemaRepository.GetCinema(id);
+            var cinema = _cinemaRepository.GetCinema(User, id);
 
             if (cinema == null)
             {
@@ -82,16 +82,22 @@ namespace MovieTheater.Controllers
         [HttpPost]
         public async Task<ActionResult<Cinema>> PostCinema(CreateCinemaViewModel model)
         {
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
             Cinema cinema = new Cinema
             {
                 Name = model.Name,
                 Address = model.Address,
-                Capacity = model.Capacity
+                Capacity = model.Capacity,
+                User = user
             };
             _context.Cinemas.Add(cinema);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCinema", new { id = cinema.Id }, cinema);
+            return CreatedAtAction("GetCinema", new { id = cinema.Id }, new { cinema.Id, cinema.Name, cinema.Address, cinema.Capacity });
         }
 
         // DELETE: api/Cinemas/5

@@ -91,7 +91,7 @@ namespace MovieTheater
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICinemaRepository, CinemaRepository>();
             services.AddScoped<IMovieRepository, MovieRepository>();
-            //services.AddScoped<IQuotesRepository, LeaderboardRepository>();
+            services.AddScoped<IQuoteRepository, QuoteRepository>();
             //services.AddScoped<IReviewsRepository, LineupRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
         }

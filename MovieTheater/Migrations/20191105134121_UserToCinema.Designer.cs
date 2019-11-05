@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MovieTheater;
 
 namespace MovieTheater.Migrations
 {
     [DbContext(typeof(MovieContext))]
-    partial class MovieContextModelSnapshot : ModelSnapshot
+    [Migration("20191105134121_UserToCinema")]
+    partial class UserToCinema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -358,7 +360,7 @@ namespace MovieTheater.Migrations
             modelBuilder.Entity("MovieTheater.Models.Quote", b =>
                 {
                     b.HasOne("MovieTheater.Models.Movie", "Movie")
-                        .WithMany("Quotes")
+                        .WithMany()
                         .HasForeignKey("MovieID")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

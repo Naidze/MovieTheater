@@ -15,7 +15,7 @@ namespace MovieTheater.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = UserRoleDefaults.Admin + "," + UserRoleDefaults.User)]
+    [Authorize]
     public class CategoriesController : ControllerBase
     {
         private readonly MovieContext _context;
@@ -109,6 +109,70 @@ namespace MovieTheater.Controllers
         }
 
 
+
+
+
+        // GET: api/Categories/5/movies/6/review
+        [HttpGet("{id}/movies/{movieID}/quotes")]
+        public ActionResult<IEnumerable<Quote>> GetMovieQuotes(int id, int movieID)
+        {
+            if (!_categoryRepository.CategoryExists(id))
+                return NotFound("Category with id: '" + id + "' does not exist.");
+
+            Category category = _categoryRepository.GetCategory(User, id);
+
+            Movie movie = category.Movies
+                .Where(mov => mov.Id == movieID)
+                .FirstOrDefault();
+
+            if (movie.Quotes == null)
+            {
+                return NotFound("Quotes for movie with id: '" + movieID + "' in category with id: " + id + " was not found");
+            }
+
+            IEnumerable<Quote> quotes = movie.Quotes.Select(q => new Quote
+            {
+                Id = q.Id,
+                Title = q.Title,
+                Text = q.Text
+            });
+
+            return Ok(quotes);
+        }
+
+        // GET: api/Categories/5/movies/6/review
+        [HttpGet("{id}/movies/{movieID}/quotes/{quoteID}")]
+        public ActionResult<Quote> GetMovieQuotes(int id, int movieID, int quoteID)
+        {
+            if (!_categoryRepository.CategoryExists(id))
+                return NotFound("Category with id: '" + id + "' does not exist.");
+
+            Category category = _categoryRepository.GetCategory(User, id);
+
+            Movie movie = category.Movies
+                .Where(mov => mov.Id == movieID)
+                .FirstOrDefault();
+
+            if (movie.Quotes == null)
+            {
+                return NotFound("Quotes for movie with id: '" + movieID + "' in category with id: " + id + " was not found");
+            }
+
+            Quote quote = movie.Quotes
+                .Where(q => q.Id == quoteID)
+                .Select(q => new Quote
+                {
+                    Id = q.Id,
+                    Title = q.Title,
+                    Text = q.Text,
+                    MovieID = movie.Id
+                })
+                .FirstOrDefault();
+
+            return Ok(quote);
+        }
+
+
         // PUT: api/Categories/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCategory(int id, Category category)
@@ -126,7 +190,7 @@ namespace MovieTheater.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CategoryExists(id))
+                if (!_categoryRepository.CategoryExists(id))
                 {
                     return NotFound();
                 }
@@ -144,13 +208,17 @@ namespace MovieTheater.Controllers
         public async Task<ActionResult<Category>> PostCategory(CreateCategoryViewModel model)
         {
             User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
             Category category = new Category
             {
                 Title = model.Title,
                 Description = model.Description,
-                Movies = model.Movies
+                Movies = model.Movies,
+                User = user
             };
-            category.User = user;
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
@@ -170,12 +238,7 @@ namespace MovieTheater.Controllers
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
 
-            return category;
-        }
-
-        private bool CategoryExists(int id)
-        {
-            return _context.Categories.Any(e => e.Id == id);
+            return Ok(new { category.Id, category.Title, category.Description });
         }
     }
 }

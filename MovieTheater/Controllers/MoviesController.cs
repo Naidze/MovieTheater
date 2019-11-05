@@ -21,18 +21,22 @@ namespace MovieTheater.Controllers
     {
         private readonly MovieContext _context;
         private readonly IMovieRepository _movieRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IQuoteRepository _quoteRepository;
 
-        public MoviesController(IMovieRepository movieRepository)
+        public MoviesController(IMovieRepository movieRepository, ICategoryRepository categoryRepository, IQuoteRepository quoteRepository)
         {
             _context = new MovieContext();
             _movieRepository = movieRepository;
+            _categoryRepository = categoryRepository;
+            _quoteRepository = quoteRepository;
         }
 
         // GET: api/Movies
         [HttpGet]
         public ActionResult<IEnumerable<Movie>> GetMovies()
         {
-            var movies = _movieRepository.GetAllMovies();
+            var movies = _movieRepository.GetAllMovies(User);
             return Ok(movies);
         }
 
@@ -43,7 +47,7 @@ namespace MovieTheater.Controllers
             if (!_movieRepository.MovieExists(id))
                 return NotFound("Movie with id: '" + id + "' does not exist.");
 
-            Movie movie = _movieRepository.GetMovie(id);
+            Movie movie = _movieRepository.GetMovie(User, id);
 
             if (movie == null)
             {
@@ -60,7 +64,7 @@ namespace MovieTheater.Controllers
             if (!_movieRepository.MovieExists(id))
                 return NotFound("Movie with id: '" + id + "' does not exist.");
 
-            Movie movie = _movieRepository.GetMovie(id);
+            Movie movie = _movieRepository.GetMovie(User, id);
 
             if (movie.Review == null)
             {
@@ -68,6 +72,64 @@ namespace MovieTheater.Controllers
             }
 
             return Ok(movie.Review);
+        }
+
+
+
+        // GET: api/Movies/5
+        [HttpGet("{id}/quotes")]
+        public ActionResult<IEnumerable<Quote>> GetMovieQuotes(int id)
+        {
+            if (!_movieRepository.MovieExists(id))
+                return NotFound("Movie with id: '" + id + "' does not exist.");
+
+            Movie movie = _movieRepository.GetMovie(User, id);
+
+            if (movie.Quotes == null)
+            {
+                return NotFound("Quotes for movie " + id + " does not exist");
+            }
+
+            IEnumerable<Quote> quotes = movie.Quotes.Select(q => new Quote
+            {
+                Id = q.Id,
+                Title = q.Title,
+                Text = q.Text,
+                MovieID = movie.Id
+            });
+
+            return Ok(quotes);
+        }
+
+        // GET: api/Movies/5
+        [HttpGet("{id}/quotes/{quoteId}")]
+        public ActionResult<Quote> GetMovieQuote(int id, int quoteId)
+        {
+            if (!_movieRepository.MovieExists(id))
+                return NotFound("Movie with id: '" + id + "' does not exist.");
+
+            Movie movie = _movieRepository.GetMovie(User, id);
+
+            if (movie.Quotes == null)
+            {
+                return NotFound("Quotes for movie " + id + " does not exist");
+            }
+
+            if (!_quoteRepository.QuoteExists(quoteId))
+                return NotFound("Quote " + quoteId + " does not exist.");
+
+            Quote quote = movie.Quotes
+                .Where(q => q.Id == quoteId)
+                .Select(q => new Quote
+                {
+                    Id = q.Id,
+                    Title = q.Title,
+                    Text = q.Text,
+                    MovieID = movie.Id
+                })
+                .FirstOrDefault();
+
+            return Ok(quote);
         }
 
         // PUT: api/Movies/5
@@ -104,7 +166,15 @@ namespace MovieTheater.Controllers
         [HttpPost]
         public async Task<ActionResult<Movie>> PostMovie(CreateMovieViewModel model)
         {
-            Category category = _context.Categories.Where(cat => cat.Id == model.CategoryID).FirstOrDefault();
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Category category = _categoryRepository.GetCategory(User, model.CategoryID);
+            if (category == null)
+                return NotFound("Category: " + model.CategoryID + " not found");
+
             Movie movie = new Movie
             {
                 Author = model.Author,
@@ -112,7 +182,7 @@ namespace MovieTheater.Controllers
                 Description = model.Description,
                 Year = model.Year,
                 ImageURL = model.ImageURL,
-                Category = category
+                CategoryID = category.Id
             };
             _context.Movies.Add(movie);
             await _context.SaveChangesAsync();

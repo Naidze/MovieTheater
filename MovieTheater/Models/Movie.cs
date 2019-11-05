@@ -19,5 +19,7 @@ namespace MovieTheater.Models
         public virtual Category Category { get; set; }
         public int ReviewID { get; set; }
         public virtual Review Review { get; set; }
+
+        public virtual IEnumerable<Quote> Quotes { get; set; }
     }
 }

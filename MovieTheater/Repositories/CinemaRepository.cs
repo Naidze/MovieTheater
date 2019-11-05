@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using MovieTheater.Helpers;
 using MovieTheater.Models;
 
 namespace MovieTheater.Repositories
@@ -16,22 +18,41 @@ namespace MovieTheater.Repositories
             _context = new MovieContext();
         }
 
-        public async Task<IEnumerable<Cinema>> GetAllCinemas()
+        public async Task<IEnumerable<Cinema>> GetAllCinemas(ClaimsPrincipal user)
         {
-            return await _context.Cinemas
+            var cinemas = _context.Cinemas.AsQueryable();
+            if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
+                cinemas = cinemas.Where(cat => cat.User.UserName.Equals(user.Identity.Name));
+
+            return await cinemas
                 .Select(cinema => new Cinema
                 {
                     Id = cinema.Id,
                     Name = cinema.Name,
                     Address = cinema.Address,
-                    Capacity = cinema.Capacity
+                    Capacity = cinema.Capacity,
+                    UserId = cinema.UserId
                 })
                 .ToListAsync();
         }
 
-        public async Task<Cinema> GetCinema(int id)
+        public Cinema GetCinema(ClaimsPrincipal user, int id)
         {
-            return await _context.Cinemas.FindAsync(id);
+            var cinemas = _context.Cinemas.AsQueryable();
+            if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
+                cinemas = cinemas.Where(cat => cat.User.UserName.Equals(user.Identity.Name));
+
+            return cinemas
+                .Where(cinema => cinema.Id.Equals(id))
+                .Select(cinema => new Cinema
+                {
+                    Id = cinema.Id,
+                    Name = cinema.Name,
+                    Address = cinema.Address,
+                    Capacity = cinema.Capacity,
+                    UserId = cinema.UserId
+                })
+                .FirstOrDefault();
         }
 
         public bool CinemaExists(int id)

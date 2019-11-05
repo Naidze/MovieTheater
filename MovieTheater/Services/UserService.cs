@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MovieTheater.Helpers;
 using MovieTheater.Models;
 using MovieTheater.Models.ViewModels;
 using System;
@@ -39,6 +40,8 @@ namespace MovieTheater.Services
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
+            var newUser = await _userManager.FindByNameAsync(user.UserName);
+            _userManager.AddToRoleAsync(newUser, UserRoleDefaults.User);
 
             return result;
         }

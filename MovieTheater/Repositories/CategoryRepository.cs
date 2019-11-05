@@ -26,6 +26,7 @@ namespace MovieTheater.Repositories
 
             return categories
                 .Include(cat => cat.Movies)
+                .ThenInclude(mov => mov.Quotes)
                 .Select(cat => new Category
                 {
                     Id = cat.Id,
@@ -41,7 +42,13 @@ namespace MovieTheater.Repositories
                         Year = mov.Year,
                         Rating = mov.Rating,
                         ImageURL = mov.ImageURL,
-                        Review = mov.Review
+                        Review = mov.Review,
+                        Quotes = mov.Quotes.Select(q => new Quote
+                        {
+                            Id = q.Id,
+                            Title = q.Title,
+                            Text = q.Text
+                        })
                     })
                 });
         }
@@ -55,6 +62,7 @@ namespace MovieTheater.Repositories
             return categories
                 .Where(cat => cat.Id == id)
                 .Include(cat => cat.Movies)
+                .ThenInclude(mov => mov.Quotes)
                 .Select(cat => new Category
                 {
                     Id = cat.Id,
@@ -70,7 +78,13 @@ namespace MovieTheater.Repositories
                         Year = mov.Year,
                         Rating = mov.Rating,
                         ImageURL = mov.ImageURL,
-                        Review = mov.Review
+                        Review = mov.Review,
+                        Quotes = mov.Quotes.Select(q => new Quote
+                        {
+                            Id = q.Id,
+                            Title = q.Title,
+                            Text = q.Text
+                        })
                     })
                 })
                 .FirstOrDefault();

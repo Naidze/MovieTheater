@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using MovieTheater.Helpers;
 using MovieTheater.Models;
 
 namespace MovieTheater.Repositories
@@ -15,9 +17,13 @@ namespace MovieTheater.Repositories
             _context = new MovieContext();
         }
 
-        public IEnumerable<Movie> GetAllMovies()
+        public IEnumerable<Movie> GetAllMovies(ClaimsPrincipal user)
         {
-            return _context.Movies
+            var movies = _context.Movies.AsQueryable();
+            if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
+                movies = movies.Where(mov => mov.Category.User.UserName.Equals(user.Identity.Name));
+
+            return movies
                 .Select(mov => new Movie
                 {
                     Id = mov.Id,
@@ -27,13 +33,23 @@ namespace MovieTheater.Repositories
                     Year = mov.Year,
                     Rating = mov.Rating,
                     ImageURL = mov.ImageURL,
-                    Review = mov.Review
+                    Review = mov.Review,
+                    Quotes = mov.Quotes.Select(q => new Quote
+                    {
+                        Id = q.Id,
+                        Title = q.Title,
+                        Text = q.Text
+                    })
                 });
         }
 
-        public Movie GetMovie(int id)
+        public Movie GetMovie(ClaimsPrincipal user, int id)
         {
-            return _context.Movies
+            var movies = _context.Movies.AsQueryable();
+            if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
+                movies = movies.Where(mov => mov.Category.User.UserName.Equals(user.Identity.Name));
+
+            return movies
                 .Where(mov => mov.Id == id)
                 .Select(mov => new Movie
                 {
@@ -44,7 +60,13 @@ namespace MovieTheater.Repositories
                     Year = mov.Year,
                     Rating = mov.Rating,
                     ImageURL = mov.ImageURL,
-                    Review = mov.Review
+                    Review = mov.Review,
+                    Quotes = mov.Quotes.Select(q => new Quote
+                    {
+                        Id = q.Id,
+                        Title = q.Title,
+                        Text = q.Text
+                    })
                 })
                 .FirstOrDefault();
         }
