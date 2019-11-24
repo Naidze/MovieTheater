@@ -19,7 +19,7 @@ namespace MovieTheater.Repositories
         {
             var quotes = _context.Quotes.AsQueryable();
             if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
-                quotes = quotes.Where(mov => mov.Movie.Category.User.UserName.Equals(user.Identity.Name));
+                quotes = quotes.Where(q => q.Movie.Category.User.UserName.Equals(user.Identity.Name));
 
             return quotes
                 .Select(q => new Quote
@@ -35,7 +35,10 @@ namespace MovieTheater.Repositories
         {
             var quotes = _context.Quotes.AsQueryable();
             if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
-                quotes = quotes.Where(mov => mov.Movie.Category.User.UserName.Equals(user.Identity.Name));
+                quotes = quotes.Where(q => q.Movie.Category.User.UserName.Equals(user.Identity.Name));
+
+            if (quotes.Count() == 0)
+                return null;
 
             return quotes
                 .Where(q => q.Id == id)

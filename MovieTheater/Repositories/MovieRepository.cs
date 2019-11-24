@@ -49,6 +49,9 @@ namespace MovieTheater.Repositories
             if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
                 movies = movies.Where(mov => mov.Category.User.UserName.Equals(user.Identity.Name));
 
+            if (movies.Count() == 0)
+                return null;
+
             return movies
                 .Where(mov => mov.Id == id)
                 .Select(mov => new Movie
@@ -74,7 +77,8 @@ namespace MovieTheater.Repositories
 
         public bool MovieExists(int id)
         {
-            return _context.Movies.Any(movie => movie.Id == id);
+            return _context.Movies
+                .Any(movie => movie.Id == id);
         }
     }
 }

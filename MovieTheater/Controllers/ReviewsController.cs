@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,42 +15,50 @@ namespace MovieTheater.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ReviewsController : ControllerBase
     {
         private readonly MovieContext _context;
+        private readonly IReviewRepository _reviewRepository;
         private readonly IMovieRepository _movieRepository;
 
-        public ReviewsController(IMovieRepository movieRepository)
+        public ReviewsController(IReviewRepository reviewRepository, IMovieRepository movieRepository)
         {
             _context = new MovieContext();
+            _reviewRepository = reviewRepository;
             _movieRepository = movieRepository;
         }
 
         // GET: api/Reviews
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Review>>> GetReviews()
+        public ActionResult<IEnumerable<Review>> GetReviews()
         {
-            return await _context.Reviews.ToListAsync();
+            return Ok(_reviewRepository.GetAllReviews(User));
         }
 
         // GET: api/Reviews/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Review>> GetReview(int id)
         {
-            var review = await _context.Reviews.FindAsync(id);
+            if (!_reviewRepository.ReviewExists(id))
+                return NotFound("Review with id: '" + id + "' was not found.");
 
-            if (review == null)
-            {
-                return NotFound();
-            }
-
-            return review;
+            return _reviewRepository.GetReview(User, id);
         }
 
         // PUT: api/Reviews/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutReview(int id, Review review)
         {
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Review dbReview = _reviewRepository.GetReview(User, id);
+            if (dbReview == null)
+                return NotFound("Review: " + id + " not found");
+
             if (id != review.Id)
             {
                 return BadRequest();
@@ -63,7 +72,7 @@ namespace MovieTheater.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ReviewExists(id))
+                if (!_reviewRepository.ReviewExists(id))
                 {
                     return NotFound();
                 }
@@ -87,7 +96,7 @@ namespace MovieTheater.Controllers
 
             Movie movie = _movieRepository.GetMovie(User, model.MovieID);
             if (movie == null)
-                return NotFound("Movie " + movie.Id + " not found.");
+                return NotFound("Movie " + model.MovieID + " not found.");
 
             Review review = new Review
             {
@@ -105,21 +114,19 @@ namespace MovieTheater.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Review>> DeleteReview(int id)
         {
-            var review = await _context.Reviews.FindAsync(id);
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Review review = _reviewRepository.GetReview(User, id);
             if (review == null)
-            {
-                return NotFound();
-            }
+                return NotFound("Review: " + id + " not found");
 
             _context.Reviews.Remove(review);
             await _context.SaveChangesAsync();
 
             return review;
-        }
-
-        private bool ReviewExists(int id)
-        {
-            return _context.Reviews.Any(e => e.Id == id);
         }
     }
 }

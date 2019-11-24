@@ -42,6 +42,9 @@ namespace MovieTheater.Repositories
             if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
                 cinemas = cinemas.Where(cat => cat.User.UserName.Equals(user.Identity.Name));
 
+            if (cinemas.Count() == 0)
+                return null;
+
             return cinemas
                 .Where(cinema => cinema.Id.Equals(id))
                 .Select(cinema => new Cinema

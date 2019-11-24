@@ -59,6 +59,9 @@ namespace MovieTheater.Repositories
             if (user != null && !user.IsInRole(UserRoleDefaults.Admin))
                 categories = categories.Where(cat => cat.User.UserName.Equals(user.Identity.Name));
 
+            if (categories.Count() == 0)
+                return null;
+
             return categories
                 .Where(cat => cat.Id == id)
                 .Include(cat => cat.Movies)
@@ -92,7 +95,8 @@ namespace MovieTheater.Repositories
 
         public bool CategoryExists(int id)
         {
-            return _context.Categories.Any(category => category.Id == id);
+            return _context.Categories
+                .Any(category => category.Id == id);
         }
     }
 }

@@ -20,11 +20,13 @@ namespace MovieTheater.Controllers
     {
         private readonly MovieContext _context;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IMovieRepository _movieRepository;
 
-        public CategoriesController(ICategoryRepository categoryRepository)
+        public CategoriesController(ICategoryRepository categoryRepository, IMovieRepository movieRepository)
         {
             _context = new MovieContext();
             _categoryRepository = categoryRepository;
+            _movieRepository = movieRepository;
         }
 
         // GET: api/Categories
@@ -85,8 +87,6 @@ namespace MovieTheater.Controllers
             return Ok(movie);
         }
 
-
-
         // GET: api/Categories/5/movies/6/review
         [HttpGet("{id}/movies/{movieID}/review")]
         public ActionResult<Review> GetMovieReview(int id, int movieID)
@@ -107,10 +107,6 @@ namespace MovieTheater.Controllers
 
             return Ok(movie.Review);
         }
-
-
-
-
 
         // GET: api/Categories/5/movies/6/review
         [HttpGet("{id}/movies/{movieID}/quotes")]
@@ -172,11 +168,19 @@ namespace MovieTheater.Controllers
             return Ok(quote);
         }
 
-
         // PUT: api/Categories/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCategory(int id, Category category)
         {
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Category dbCategory = _categoryRepository.GetCategory(User, id);
+            if (dbCategory == null)
+                return NotFound("Category: " + id + " not found");
+
             if (id != category.Id)
             {
                 return BadRequest();
@@ -225,15 +229,72 @@ namespace MovieTheater.Controllers
             return CreatedAtAction("GetCategory", new { id = category.Id }, new { category.Id, category.Title, category.Description });
         }
 
+        // POST: api/Categories
+        [HttpPost("{id}/movies")]
+        public async Task<ActionResult<Category>> PostCategoryMovie([FromRoute]int id, CreateMovieViewModel model)
+        {
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Category category = _categoryRepository.GetCategory(User, id);
+            if (category == null)
+                return NotFound("Category: " + id + " not found");
+
+            Movie movie = new Movie
+            {
+                Author = model.Author,
+                Title = model.Title,
+                Description = model.Description,
+                Year = model.Year,
+                ImageURL = model.ImageURL,
+                CategoryID = id
+            };
+            _context.Movies.Add(movie);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetCategoryMovie", new { id, movieID = movie.Id }, new { movie.Id, movie.Author, movie.Title, movie.Description, movie.Year });
+        }
+
+
+
+        // POST: api/Categories
+        [HttpPost("{id}/movies/{movieID}/review")]
+        public async Task<ActionResult<Category>> PostCategoryMovieReview([FromRoute]int id, [FromRoute]int movieID, CreateReviewViewModel model)
+        {
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+            if (user == null)
+                return Unauthorized();
+
+            Movie movie = _movieRepository.GetMovie(User, movieID);
+            if (movie == null)
+                return NotFound("Movie " + movieID + " not found.");
+
+            Review review = new Review
+            {
+                Stars = model.Stars,
+                Comment = model.Comment,
+                MovieID = movie.Id
+            };
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetMovieReview", new { id, movieID }, review);
+        }
+
         // DELETE: api/Categories/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Category>> DeleteCategory(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Category category = _categoryRepository.GetCategory(User, id);
             if (category == null)
-            {
-                return NotFound();
-            }
+                return NotFound("Category: " + id + " not found");
 
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();

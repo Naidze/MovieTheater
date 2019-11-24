@@ -57,6 +57,15 @@ namespace MovieTheater.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutQuote(int id, Quote quote)
         {
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Quote dbQuote = _quoteRepository.GetQuote(User, id);
+            if (dbQuote == null)
+                return NotFound("Quote: " + id + " not found");
+
             if (id != quote.Id)
             {
                 return BadRequest();
@@ -70,7 +79,7 @@ namespace MovieTheater.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!QuoteExists(id))
+                if (!_quoteRepository.QuoteExists(id))
                 {
                     return NotFound();
                 }
@@ -112,21 +121,19 @@ namespace MovieTheater.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Quote>> DeleteQuote(int id)
         {
-            var quote = await _context.Quotes.FindAsync(id);
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Quote quote = _quoteRepository.GetQuote(User, id);
             if (quote == null)
-            {
-                return NotFound();
-            }
+                return NotFound("Quote: " + id + " not found");
 
             _context.Quotes.Remove(quote);
             await _context.SaveChangesAsync();
 
             return quote;
-        }
-
-        private bool QuoteExists(int id)
-        {
-            return _context.Quotes.Any(e => e.Id == id);
         }
     }
 }

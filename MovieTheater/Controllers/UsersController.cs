@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MovieTheater.Models;
 using MovieTheater.Models.ViewModels;
 using MovieTheater.Repositories;
 using MovieTheater.Services;
@@ -18,12 +20,14 @@ namespace MovieTheater.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
         private readonly IAuthService _authService;
+        private readonly UserManager<User> _userManager;
 
-        public UsersController(IUserRepository userRepository, IUserService userService, IAuthService authService)
+        public UsersController(IUserRepository userRepository, IUserService userService, IAuthService authService, UserManager<User> userManager)
         {
             _userRepository = userRepository;
             _userService = userService;
             _authService = authService;
+            _userManager = userManager;
         }
 
         [HttpPost("login")]
@@ -40,6 +44,9 @@ namespace MovieTheater.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
         {
+            if (model.UserName == null || model.Password == null || model.Email == null)
+                return UnprocessableEntity("UserName, Password and/or Email is missing.");
+
             // Checking for duplicates usernames
             if (await _userRepository.UserExists(model.UserName))
                 return StatusCode(422, "Username is already taken!");
@@ -65,10 +72,21 @@ namespace MovieTheater.Controllers
         // GET: api/Users
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public ActionResult<IEnumerable<object>> GetUsers()
+        public async Task<ActionResult<IEnumerable<object>>> GetUsers()
         {
+            List<object> usrs = new List<object>();
             var users = _userService.GetAllUsers();
-            return Ok(users);
+            await _userManager.Users.ForEachAsync(async user =>
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                usrs.Add(new
+                {
+                    user.Id,
+                    user.UserName,
+                    roles
+                });
+            });
+            return Ok(usrs);
         }
     }
 }

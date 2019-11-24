@@ -16,7 +16,7 @@ namespace MovieTheater.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = UserRoleDefaults.Admin)]
+    [Authorize]
     public class MoviesController : ControllerBase
     {
         private readonly MovieContext _context;
@@ -136,6 +136,15 @@ namespace MovieTheater.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMovie(int id, Movie movie)
         {
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Movie dbMovie = _movieRepository.GetMovie(User, id);
+            if (dbMovie == null)
+                return NotFound("Movie: " + id + " not found");
+
             if (id != movie.Id)
             {
                 return BadRequest();
@@ -149,7 +158,7 @@ namespace MovieTheater.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MovieExists(id))
+                if (!_movieRepository.MovieExists(id))
                 {
                     return NotFound();
                 }
@@ -194,21 +203,19 @@ namespace MovieTheater.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Movie>> DeleteMovie(int id)
         {
-            var movie = await _context.Movies.FindAsync(id);
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Movie movie = _movieRepository.GetMovie(User, id);
             if (movie == null)
-            {
-                return NotFound();
-            }
+                return NotFound("Movie: " + id + " not found");
 
             _context.Movies.Remove(movie);
             await _context.SaveChangesAsync();
 
             return movie;
-        }
-
-        private bool MovieExists(int id)
-        {
-            return _context.Movies.Any(e => e.Id == id);
         }
     }
 }

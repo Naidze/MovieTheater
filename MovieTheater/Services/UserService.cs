@@ -40,8 +40,9 @@ namespace MovieTheater.Services
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
-            var newUser = await _userManager.FindByNameAsync(user.UserName);
-            _userManager.AddToRoleAsync(newUser, UserRoleDefaults.User);
+
+            if(result.Succeeded)
+                await _userManager.AddToRoleAsync(user, UserRoleDefaults.User);
 
             return result;
         }

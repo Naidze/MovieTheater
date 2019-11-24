@@ -52,6 +52,15 @@ namespace MovieTheater.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCinema(int id, Cinema cinema)
         {
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Cinema dbCinema = _cinemaRepository.GetCinema(User, id);
+            if (dbCinema == null)
+                return NotFound("Cinema: " + id + " not found");
+
             if (id != cinema.Id)
             {
                 return BadRequest();
@@ -65,7 +74,7 @@ namespace MovieTheater.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CinemaExists(id))
+                if (!_cinemaRepository.CinemaExists(id))
                 {
                     return NotFound();
                 }
@@ -104,21 +113,19 @@ namespace MovieTheater.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Cinema>> DeleteCinema(int id)
         {
-            var cinema = await _context.Cinemas.FindAsync(id);
+            User user = await _context.Users.FindAsync(User.Claims.ToList()[0].Value);
+
+            if (user == null)
+                return Unauthorized();
+
+            Cinema cinema = _cinemaRepository.GetCinema(User, id);
             if (cinema == null)
-            {
-                return NotFound();
-            }
+                return NotFound("Cinema: " + id + " not found");
 
             _context.Cinemas.Remove(cinema);
             await _context.SaveChangesAsync();
 
             return cinema;
-        }
-
-        private bool CinemaExists(int id)
-        {
-            return _context.Cinemas.Any(e => e.Id == id);
         }
     }
 }
