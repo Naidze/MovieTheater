@@ -14,6 +14,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
+import CategoryIcon from '@material-ui/icons/Category';
+import MovieFilterIcon from '@material-ui/icons/MovieFilter';
+import TheaterIcon from '@material-ui/icons/Theaters';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -60,21 +64,27 @@ const Home = () => {
       onKeyDown={toggleDrawer(side, false)}
     >
       <List>
-        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+        {/* {['Categories', 'Movies', 'Reviews', 'Quotes'].map((text, index) => (
           <ListItem button key={text}>
             <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
             <ListItemText primary={text} />
           </ListItem>
-        ))}
+        ))} */}
+        <ListItem component={Link} to="/categories" button>
+          <ListItemIcon><CategoryIcon /></ListItemIcon>
+          <ListItemText primary="Categories" />
+        </ListItem>
+        <ListItem component={Link} to="movies" button>
+          <ListItemIcon><MovieFilterIcon /></ListItemIcon>
+          <ListItemText primary="Movies" />
+        </ListItem>
       </List>
       <Divider />
       <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
+        <ListItem component={Link} to="cinemas" button>
+          <ListItemIcon><TheaterIcon /></ListItemIcon>
+          <ListItemText primary="Cinemas" />
+        </ListItem>
       </List>
     </div>
   );
