@@ -49,7 +49,6 @@ const styles = theme => ({
 });
 
 const submitLogin = values => {
-	console.log(values);
 	axios.post("/api/auth/token", values)
 		.then(r => {
 			localStorage.setItem("access_token", r.data)
@@ -60,7 +59,6 @@ const submitLogin = values => {
 
 class Login extends PureComponent {
 	componentDidMount() {
-		console.log(isAuth());
 		if (isAuth()) {
 			// window.location.replace('/');
 		}

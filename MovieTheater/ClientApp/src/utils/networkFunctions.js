@@ -9,3 +9,4 @@ const defaultOptions = {
 const instance = axios.create(defaultOptions);
 
 export const getCategories = () => instance.get('/api/categories');
+export const getCategory = categoryId => instance.get(`/api/categories/${categoryId}`);

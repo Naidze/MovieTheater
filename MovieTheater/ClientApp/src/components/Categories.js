@@ -1,19 +1,19 @@
 import React, { PureComponent } from "react"
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import StarIcon from '@material-ui/icons/Star';
 import { withStyles } from '@material-ui/core/styles';
-import axios from 'axios';
 import { getCategories } from '../utils/networkFunctions.js';
 import { Container, Box, Grid } from "@material-ui/core";
-import { spacing } from '@material-ui/system';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
+import EditIcon from '@material-ui/icons/Edit';
+import { Link } from 'react-router-dom';
 
 const styles = theme => ({
 	root: {
-		width: '100%',
+		minWidth: 300,
 		maxWidth: 360,
 		backgroundColor: theme.palette.background.paper,
 
@@ -29,13 +29,21 @@ class Categories extends PureComponent {
 			.catch(err => console.log(err))
 	}
 
+	handleCategoryOpen(category) {
+	}
+
 	render() {
 		const { classes } = this.props;
 		let categories = [];
 		if (this.state.categories) {
 			categories = this.state.categories.map((cat, id) => (
-				<ListItem key={id} button>
+				<ListItem key={id} button component={Link} to={`/categories/${cat.id}`}>
 					<ListItemText primary={cat.title} />
+					<ListItemSecondaryAction>
+						<IconButton edge="end" aria-label="delete">
+							<EditIcon />
+						</IconButton>
+					</ListItemSecondaryAction>
 				</ListItem>
 			));
 		}
