@@ -87,6 +87,7 @@ class Login extends PureComponent {
 							onSubmit={(values, actions) => {
 								actions.setSubmitting(true);
 								submitLogin(values);
+								actions.setSubmitting(false);
 							}}
 							render={(formProps) => {
 								const { values, handleChange, setFieldTouched } = formProps;

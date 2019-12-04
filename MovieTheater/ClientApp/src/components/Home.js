@@ -81,7 +81,7 @@ const Home = () => {
       </List>
       <Divider />
       <List>
-        <ListItem component={Link} to="cinemas" button>
+        <ListItem component={Link} to="/cinemas" button>
           <ListItemIcon><TheaterIcon /></ListItemIcon>
           <ListItemText primary="Cinemas" />
         </ListItem>
@@ -125,7 +125,7 @@ const Home = () => {
           <Typography variant="h6" className={classes.title}>
             Movie Theater
           </Typography>
-          <Button color="inherit">Login</Button>
+          <Button color="inherit" component={Link} to="/login">Login</Button>
         </Toolbar>
       </AppBar>
       <SwipeableDrawer
