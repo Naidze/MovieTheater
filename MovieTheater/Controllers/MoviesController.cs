@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -190,7 +191,7 @@ namespace MovieTheater.Controllers
                 Title = model.Title,
                 Description = model.Description,
                 Year = model.Year,
-                ImageURL = model.ImageURL,
+                ImageURL = model.ImageURL != null ? model.ImageURL : CommonFunctions.GetImageURL(model.Title),
                 CategoryID = category.Id
             };
             _context.Movies.Add(movie);

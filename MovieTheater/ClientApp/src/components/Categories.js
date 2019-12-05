@@ -67,7 +67,7 @@ export default function Categories(props) {
 		<ListItem key={id} button component={Link} to={`/categories/${cat.id}`}>
 			<ListItemText primary={cat.title} />
 			<ListItemSecondaryAction>
-				<IconButton edge="end" aria-label="delete" onClick={() => showCategoryFrom(cat)}>
+				<IconButton edge="end" aria-label="edit" onClick={() => showCategoryFrom(cat)}>
 					<EditIcon />
 				</IconButton>
 				<IconButton edge="end" aria-label="delete" onClick={() => onCategoryDelete(cat)}>
@@ -77,7 +77,7 @@ export default function Categories(props) {
 		</ListItem >
 	));
 	return (
-		<Container maxWidth='md'>
+		<Container maxWidth='lg'>
 			<Box m={2}>
 				<Button color="primary" variant="contained" onClick={() => showCategoryFrom(null)}>Create</Button>
 			</Box>

@@ -1,14 +1,9 @@
-import React, { PureComponent, useState, useEffect } from "react"
-import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
-import { withStyles } from '@material-ui/core/styles';
+import React, { useState, useEffect } from "react"
 import { getCategory } from '../utils/networkFunctions.js';
-import { Container, Box, Grid, Typography, Paper } from "@material-ui/core";
+import { Container, Box, Grid, Typography, IconButton } from "@material-ui/core";
 import CircularProgress from '@material-ui/core/CircularProgress';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
-import EditIcon from '@material-ui/icons/Edit';
-import { Link } from 'react-router-dom';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Add';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
@@ -16,10 +11,11 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
 import ReviewForm from "./Reviews/ReviewForm.js";
-import CategoryForm from "./Categories/CategoryForm.js";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import _ from 'lodash';
 import { makeStyles } from "@material-ui/styles";
+import MovieForm from "./Movies/MovieForm.js";
+import EditIcon from '@material-ui/icons/Edit';
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -27,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 		maxWidth: 360,
 	},
 	card: {
-		maxWidth: 345
+		width: 300
 	},
 	media: {
 		height: 200,
@@ -36,12 +32,28 @@ const useStyles = makeStyles(theme => ({
 		textAlign: 'justify',
 		height: 75,
 		overflowY: 'auto'
+	},
+	pageControls: {
+		margin: 0,
+		top: 'auto',
+		right: 20,
+		bottom: 20,
+		left: 'auto',
+		position: 'fixed'
+	},
+	editBtn: {
+		margin: 0
+	},
+	cardsFlex: {
+		display: 'flex',
+		justifyContent: 'space-evenly'
 	}
 }));
 
 export default function Category(props) {
 	const classes = useStyles();
 	const [reviewFormVisible, setReviewFormVisible] = useState(false);
+	const [movieFormVisible, setMovieFormVisible] = useState(false);
 	const [category, setCategory] = useState({});
 	const [formMovie, setFormMovie] = useState({});
 
@@ -55,6 +67,17 @@ export default function Category(props) {
 			setFormMovie(movie);
 		}
 		setReviewFormVisible(true);
+	}
+
+	const hideMovieForm = () => {
+		setMovieFormVisible(false);
+	}
+
+	const showMovieForm = movie => {
+		if (movie) {
+			setFormMovie(movie);
+		}
+		setMovieFormVisible(true);
 	}
 
 	useEffect(() => {
@@ -78,9 +101,9 @@ export default function Category(props) {
 								<Typography gutterBottom align="center">
 									{category.description}
 								</Typography>
-								<Grid container spacing={3}>
+								<Grid container spacing={3} className={classes.cardsFlex}>
 									{category.movies.map((movie, id) => (
-										<Grid item xs={12} key={id}>
+										<Grid item key={id}>
 											<Card className={classes.card}>
 												<CardActionArea>
 													<CardMedia
@@ -112,6 +135,10 @@ export default function Category(props) {
 													<Button size="small" color="primary">
 														{"Quotes"}
 													</Button>
+													<div style={{ flex: '1 0 0' }} />
+													<IconButton className={classes.editBtn} edge="end" aria-label="edit" onClick={() => showMovieForm(movie)} >
+														<EditIcon />
+													</IconButton>
 												</CardActions>
 											</Card>
 										</Grid>
@@ -122,6 +149,12 @@ export default function Category(props) {
 				</Box>
 			</Grid>
 			{reviewFormVisible && <ReviewForm onCancel={hideReviewForm} movie={formMovie} />}
+			{movieFormVisible && <MovieForm onCancel={hideMovieForm} movie={formMovie} categoryId={category.id} />}
+			<div className={classes.pageControls}>
+				<Fab color="primary" aria-label="add" onClick={() => showMovieForm()}>
+					<AddIcon />
+				</Fab>
+			</div>
 		</Container>
 	);
 };

@@ -9,6 +9,7 @@ import { Formik, Form } from 'formik';
 import { categoryFormValidation } from '../../utils/validation';
 import { TextField } from '@material-ui/core';
 import { createCategory, editCategory } from '../../utils/networkFunctions';
+import { toast } from 'react-toastify';
 
 export default function CategoryForm({ category, onCancel, onSubmit, updateCategories }) {
 	const [isEditing, setEditing] = useState(false);
@@ -35,17 +36,21 @@ export default function CategoryForm({ category, onCancel, onSubmit, updateCateg
 
 	function submitCategory(values, isEditing) {
 		const categoryToSubmit = {
-			title: values.title
+			title: values.title,
+			description: values.description
 		};
 		if (isEditing) {
-			editCategory(category.id, categoryToSubmit);
+			editCategory(category.id, categoryToSubmit)
+				.then(r => toast.success("Category editted successfully"))
+				.catch(err => toast.error(err.message));
 		} else {
 			createCategory(categoryToSubmit)
 				.then(r => {
+					toast.success("Category created successfully");
 					updateCategoriesList(r.data);
 					onCancel();
 				})
-				.catch(err => console.log(err));
+				.catch(err => toast.error(err.message));
 		}
 	}
 
