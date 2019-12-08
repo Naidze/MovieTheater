@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, useEffect } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -13,11 +13,14 @@ import Typography from '@material-ui/core/Typography';
 import { Copyright } from '../../utils/helpers';
 import { Formik, Form } from 'formik';
 import { loginValidation } from '../../utils/validation';
-import { withStyles } from '@material-ui/core/styles';
 import axios from 'axios';
 import { isAuth } from '../../utils/auth';
+import { fakeAuth } from './PrivateRoute';
+import { makeStyles } from '@material-ui/core/styles';
+import { Route, Redirect } from 'react-router';
+import { toast } from 'react-toastify';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
 	root: {
 		height: '100vh',
 	},
@@ -46,31 +49,28 @@ const styles = theme => ({
 	submit: {
 		margin: theme.spacing(3, 0, 2),
 	},
-});
+}));
 
-const submitLogin = values => {
-	axios.post("/api/auth/token", values)
-		.then(r => {
-			localStorage.setItem("access_token", r.data)
-		})
-		.then(r => window.location.reload())
-		.catch(err => console.log(err));
+const submitLogin = async values => {
+	await axios.post("/api/auth/token", values)
+		.then(r => localStorage.setItem("ACCESS_TOKEN", r.data))
+		.catch(err => toast.error(err.message));
+	fakeAuth.authenticate();
+	// setTimeout(() => {
+	// fakeAuth.authenticate();
+	// }, 1000);
 }
 
-class Login extends PureComponent {
-	componentDidMount() {
-		if (isAuth()) {
-			// window.location.replace('/');
-		}
-	}
+export default function Login(props) {
+	useEffect(() => {
+		// fakeAuth.authenticate();
+		// console.log(fakeAuth.isAuthenticated);
+	})
 
-	render() {
-		const {
-			classes
-		} = this.props;
-
-		return (
-			<Grid container component="main" className={classes.root}>
+	const classes = useStyles();
+	return (
+		!fakeAuth.isAuthenticated
+			? <Grid container component="main" className={classes.root}>
 				<CssBaseline />
 				<Grid item xs={false} sm={4} md={7} className={classes.image} />
 				<Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
@@ -131,8 +131,8 @@ class Login extends PureComponent {
 											color="primary"
 											className={classes.submit}
 										>
-											Sign In
-            </Button>
+											{"Sign In"}
+										</Button>
 										<Grid container>
 											<Grid item>
 												<RouteLink to="/register">
@@ -152,8 +152,9 @@ class Login extends PureComponent {
 					</div>
 				</Grid>
 			</Grid>
-		);
-	}
+			: <Redirect to={{
+				pathname: '/categories',
+				state: { from: props.location }
+			}} />
+	);
 }
-
-export default withStyles(styles)(Login);

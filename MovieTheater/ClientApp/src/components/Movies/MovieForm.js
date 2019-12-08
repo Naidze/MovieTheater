@@ -11,7 +11,7 @@ import { TextField } from '@material-ui/core';
 import { createCategory, editCategory, createMovie, editMovie, deleteMovie } from '../../utils/networkFunctions';
 import { toast } from 'react-toastify';
 
-export default function MovieForm({ movie, onCancel, onSubmit, updateCategories, categoryId }) {
+export default function MovieForm({ movie, onCancel, onSubmit, updateCategories }) {
 	const [isEditing, setEditing] = useState(false);
 
 	useEffect(() => {
@@ -35,14 +35,9 @@ export default function MovieForm({ movie, onCancel, onSubmit, updateCategories,
 	}
 
 	function submitMovie(values, isEditing) {
+		const { author, title, description, year, rating, imageURL, categoryId } = values
 		const movieToSubmit = {
-			author: values.author,
-			title: values.title,
-			description: values.description,
-			year: values.year,
-			rating: values.rating,
-			imageURL: values.imageURL,
-			categoryId
+			author, title, description, year, rating, imageURL, categoryId
 		};
 		if (isEditing) {
 			editMovie(movie.id, movieToSubmit)
@@ -53,6 +48,7 @@ export default function MovieForm({ movie, onCancel, onSubmit, updateCategories,
 				.then(r => {
 					toast.success("Movie created successfully");
 					onCancel();
+					setTimeout(window.location.reload(), 1000);
 				})
 				.catch(err => toast.error(err.message));
 		}
@@ -136,7 +132,7 @@ export default function MovieForm({ movie, onCancel, onSubmit, updateCategories,
 									id="year"
 									label="Year"
 									name="year"
-									value={values.year}
+									value={values.year || ''}
 									onChange={change.bind(null, "year")}
 									inputProps={{ min: "1900", max: new Date().getFullYear(), step: "1" }}
 								/>
@@ -148,9 +144,9 @@ export default function MovieForm({ movie, onCancel, onSubmit, updateCategories,
 									id="rating"
 									label="Rating"
 									name="rating"
-									value={values.rating}
+									value={values.rating || ''}
 									onChange={change.bind(null, "rating")}
-									inputProps={{ min: "0", max: "10", step: "0.1" }}
+									inputProps={{ min: "1900", max: new Date().getFullYear(), step: "1" }}
 								/>
 								<TextField
 									variant="outlined"
@@ -159,7 +155,7 @@ export default function MovieForm({ movie, onCancel, onSubmit, updateCategories,
 									id="imageURL"
 									label="Image URL"
 									name="imageURL"
-									value={values.imageURL}
+									value={values.imageURL || ''}
 									onChange={change.bind(null, "imageURL")}
 								/>
 							</DialogContent>

@@ -18,6 +18,7 @@ import CategoryIcon from '@material-ui/icons/Category';
 import MovieFilterIcon from '@material-ui/icons/MovieFilter';
 import TheaterIcon from '@material-ui/icons/Theaters';
 import { Link } from 'react-router-dom';
+import { fakeAuth } from './Authentication/PrivateRoute';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -74,7 +75,7 @@ const Home = () => {
           <ListItemIcon><CategoryIcon /></ListItemIcon>
           <ListItemText primary="Categories" />
         </ListItem>
-        <ListItem component={Link} to="movies" button>
+        <ListItem component={Link} to="/movies" button>
           <ListItemIcon><MovieFilterIcon /></ListItemIcon>
           <ListItemText primary="Movies" />
         </ListItem>
@@ -125,7 +126,9 @@ const Home = () => {
           <Typography variant="h6" className={classes.title}>
             Movie Theater
           </Typography>
-          <Button color="inherit" component={Link} to="/login">Login</Button>
+          {fakeAuth.isAuthenticated
+            ? <Button color="inherit" onClick={fakeAuth.signout}>Logout</Button>
+            : <Button color="inherit" component={Link} to="/login">Login</Button>}
         </Toolbar>
       </AppBar>
       <SwipeableDrawer

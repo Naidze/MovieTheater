@@ -1,14 +1,14 @@
 import decode from 'jwt-decode';
 
 export const parse = () => {
-	const token = localStorage.getItem('access_token');
+	const token = localStorage.getItem('ACCESS_TOKEN');
 	try {
 		const decoded = decode(token);
 		if (decoded.exp > Date.now() / 1000) {
 			return decoded;
 		}
 
-		localStorage.removeItem('access_token');
+		localStorage.removeItem('ACCESS_TOKEN');
 		return null;
 	} catch (err) {
 		return null;
@@ -16,8 +16,16 @@ export const parse = () => {
 };
 
 export const isAuth = () => {
-	const token = localStorage.getItem('access_token');
-	if (!token) { return false; }
+	const token = localStorage.getItem('ACCESS_TOKEN');
+	if (!token) {
+		sessionStorage.removeItem("IS_AUTHENTICATED");
+		return false;
+	}
+	const decoded = decode(token);
+	if (decoded.exp > Date.now() / 1000) {
+		sessionStorage.setItem("IS_AUTHENTICATED", true);
+		return true;
+	} else {
 
-	return parse();
+	}
 };

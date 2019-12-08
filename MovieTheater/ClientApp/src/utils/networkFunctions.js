@@ -1,28 +1,46 @@
 import axios from 'axios';
 
-const defaultOptions = {
-	headers: {
-		'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+const config = () => {
+	return {
+		headers: {
+			'Authorization': `Bearer ${localStorage.getItem('ACCESS_TOKEN')}`
+		}
 	}
-};
+}
 
-const instance = axios.create(defaultOptions);
+// auth
+export const authenticate = () => axios.get('/api/auth', config());
+export const login = data => axios.post('/api/auth/token', data);
+export const register = data => axios.post('/api/users/register', data);
 
 // categories
-export const getCategories = () => instance.get('/api/categories');
-export const getCategory = categoryId => instance.get(`/api/categories/${categoryId}`);
-export const createCategory = category => instance.post('/api/categories', category);
-export const editCategory = (categoryId, category) => instance.put(`/api/categories/${categoryId}`, category);
-export const deleteCategory = categoryId => instance.delete(`/api/categories/${categoryId}`);
+export const getCategories = () => axios.get('/api/categories', config());
+export const getCategory = categoryId => axios.get(`/api/categories/${categoryId}`, config());
+export const createCategory = category => axios.post('/api/categories', category, config());
+export const editCategory = (categoryId, category) => axios.put(`/api/categories/${categoryId}`, category, config());
+export const deleteCategory = categoryId => axios.delete(`/api/categories/${categoryId}`, config());
 
 // movies
-export const getMovie = movieId => instance.get(`/api/movies/${movieId}`);
-export const createMovie = movie => instance.post('/api/movies/', movie);
-export const editMovie = (movieId, movie) => instance.put(`/api/movies/${movieId}`, movie);
-export const deleteMovie = movieId => instance.delete(`/api/movies/${movieId}`);
+export const getMovies = () => axios.get('/api/movies', config())
+export const getMovie = movieId => axios.get(`/api/movies/${movieId}`, config());
+export const createMovie = movie => axios.post('/api/movies/', movie, config());
+export const editMovie = (movieId, movie) => axios.put(`/api/movies/${movieId}`, movie, config());
+export const deleteMovie = movieId => axios.delete(`/api/movies/${movieId}`, config());
 
 // reviews
-export const getReview = movieId => instance.get(`/api/movies/${movieId}/review`)
-export const createReview = review => instance.post('/api/reviews', review);
-export const editReview = (reviewId, review) => instance.put(`/api/reviews${reviewId}`, review);
-export const deleteReview = reviewId => instance.delete(`/api/reviews/${reviewId}`);
+export const getReview = movieId => axios.get(`/api/movies/${movieId}/review`, config())
+export const createReview = review => axios.post('/api/reviews', review, config());
+export const editReview = (reviewId, review) => axios.put(`/api/reviews${reviewId}`, review, config());
+export const deleteReview = reviewId => axios.delete(`/api/reviews/${reviewId}`, config());
+
+//quotes
+
+export const createQuote = quote => axios.post('/api/quotes', quote, config());
+export const deleteQuote = quoteId => axios.delete(`/api/quotes/${quoteId}`, config());
+
+// cinemas
+export const getCinemas = () => axios.get('/api/cinemas', config());
+export const getCinema = cinemaId => axios.get(`/api/cinemas/${cinemaId}`, config());
+export const createCinema = cinema => axios.post('/api/cinemas', cinema, config());
+export const editCinema = (cinemaId, cinema) => axios.put(`/api/cinemas/${cinemaId}`, cinema, config());
+export const deleteCinema = cinemaId => axios.delete(`/api/cinemas/${cinemaId}`, config());

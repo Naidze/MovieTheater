@@ -48,7 +48,8 @@ namespace MovieTheater.Repositories
                             Id = q.Id,
                             Title = q.Title,
                             Text = q.Text
-                        })
+                        }),
+                        CategoryID = mov.CategoryID
                     })
                 });
         }

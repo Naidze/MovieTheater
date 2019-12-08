@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MovieTheater.Models.ViewModels;
 using MovieTheater.Services;
 using System.Threading.Tasks;
@@ -25,6 +26,13 @@ namespace MovieTheater.Controllers
                 return Unauthorized("Failed to get token for user: " + model.UserName);
 
             return Ok(token);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult IsAuth()
+        {
+            return Ok(true);
         }
     }
 }

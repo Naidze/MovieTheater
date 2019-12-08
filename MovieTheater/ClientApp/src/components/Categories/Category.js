@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { getCategory } from '../utils/networkFunctions.js';
+import { getCategory } from '../../utils/networkFunctions.js';
 import { Container, Box, Grid, Typography, IconButton } from "@material-ui/core";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fab from '@material-ui/core/Fab';
@@ -10,12 +10,13 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
-import ReviewForm from "./Reviews/ReviewForm.js";
+import ReviewForm from "../Reviews/ReviewForm.js";
 import { toast } from "react-toastify";
 import _ from 'lodash';
 import { makeStyles } from "@material-ui/styles";
-import MovieForm from "./Movies/MovieForm.js";
+import MovieForm from "../Movies/MovieForm.js";
 import EditIcon from '@material-ui/icons/Edit';
+import QuotesForm from "../Quotes/QuotesForm.js";
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -46,7 +47,7 @@ const useStyles = makeStyles(theme => ({
 	},
 	cardsFlex: {
 		display: 'flex',
-		justifyContent: 'space-evenly'
+		justifyContent: 'space-between'
 	}
 }));
 
@@ -54,13 +55,9 @@ export default function Category(props) {
 	const classes = useStyles();
 	const [reviewFormVisible, setReviewFormVisible] = useState(false);
 	const [movieFormVisible, setMovieFormVisible] = useState(false);
+	const [quotesFormVisible, setQuotesFormVisible] = useState(false);
 	const [category, setCategory] = useState({});
 	const [formMovie, setFormMovie] = useState({});
-
-	const hideReviewForm = () => {
-		setFormMovie({});
-		setReviewFormVisible(false);
-	}
 
 	const showReviewForm = movie => {
 		if (movie) {
@@ -69,8 +66,9 @@ export default function Category(props) {
 		setReviewFormVisible(true);
 	}
 
-	const hideMovieForm = () => {
-		setMovieFormVisible(false);
+	const hideReviewForm = () => {
+		setFormMovie({});
+		setReviewFormVisible(false);
 	}
 
 	const showMovieForm = movie => {
@@ -78,6 +76,22 @@ export default function Category(props) {
 			setFormMovie(movie);
 		}
 		setMovieFormVisible(true);
+	}
+
+	const hideMovieForm = () => {
+		setMovieFormVisible(false);
+	}
+
+	const showQuotesForm = movie => {
+		if (movie) {
+			setFormMovie(movie);
+		}
+		setQuotesFormVisible(true);
+	}
+
+	const hideQuotesForm = () => {
+		setFormMovie({});
+		setQuotesFormVisible(false);
 	}
 
 	useEffect(() => {
@@ -108,7 +122,7 @@ export default function Category(props) {
 												<CardActionArea>
 													<CardMedia
 														className={classes.media}
-														image={movie.imageURL || require('../content/images/movie-placeholder.jpg')}
+														image={movie.imageURL || require('../../content/images/movie-placeholder.jpg')}
 														title={movie.title}
 													/>
 													<CardContent>
@@ -132,7 +146,7 @@ export default function Category(props) {
 													<Button size="small" color="primary" onClick={() => showReviewForm(movie)}>
 														{"Review"}
 													</Button>
-													<Button size="small" color="primary">
+													<Button size="small" color="primary" onClick={() => showQuotesForm(movie)}>
 														{"Quotes"}
 													</Button>
 													<div style={{ flex: '1 0 0' }} />
@@ -149,7 +163,8 @@ export default function Category(props) {
 				</Box>
 			</Grid>
 			{reviewFormVisible && <ReviewForm onCancel={hideReviewForm} movie={formMovie} />}
-			{movieFormVisible && <MovieForm onCancel={hideMovieForm} movie={formMovie} categoryId={category.id} />}
+			{movieFormVisible && <MovieForm onCancel={hideMovieForm} movie={formMovie} />}
+			{quotesFormVisible && <QuotesForm onCancel={hideQuotesForm} movie={formMovie} />}
 			<div className={classes.pageControls}>
 				<Fab color="primary" aria-label="add" onClick={() => showMovieForm()}>
 					<AddIcon />
