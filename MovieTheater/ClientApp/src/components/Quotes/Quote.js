@@ -1,5 +1,4 @@
 import React, { useState, Fragment } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import {
 	ListItem,
 	ListItemText,
@@ -9,10 +8,6 @@ import {
 import RemoveIcon from '@material-ui/icons/Delete';
 import { deleteQuote } from '../../utils/networkFunctions';
 import { toast } from 'react-toastify';
-
-const useStyles = makeStyles(theme => ({
-
-}));
 
 export default function Quote({ quote }) {
 	const [deleteDisabled, setDeleteDisabled] = useState(false);

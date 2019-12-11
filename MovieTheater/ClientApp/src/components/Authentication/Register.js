@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
 import { Link as RouteLink } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
@@ -17,6 +15,7 @@ import { Copyright } from '../../utils/helpers';
 import { Formik, Form } from 'formik';
 import { register } from '../../utils/networkFunctions';
 import { toast } from 'react-toastify';
+import { fakeAuth } from './PrivateRoute';
 
 const useStyles = makeStyles(theme => ({
 	paper: {
@@ -38,8 +37,13 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-export default function SignUp() {
+export default function SignUp(props) {
 	const classes = useStyles();
+	useEffect(() => {
+		if (fakeAuth.isAuthenticated) {
+			props.history.push('/categories');
+		}
+	})
 
 	return (
 		<Container component="main" maxWidth="xs">
@@ -68,7 +72,7 @@ export default function SignUp() {
 					}}
 				>
 					{(formProps) => {
-						const { values, handleChange, setFieldTouched, setFieldValue } = formProps;
+						const { values, handleChange, setFieldTouched } = formProps;
 						const change = (name, e) => {
 							e.persist();
 							handleChange(e);

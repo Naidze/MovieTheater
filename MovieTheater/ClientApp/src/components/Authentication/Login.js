@@ -1,4 +1,4 @@
-import React, { PureComponent, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -14,10 +14,9 @@ import { Copyright } from '../../utils/helpers';
 import { Formik, Form } from 'formik';
 import { loginValidation } from '../../utils/validation';
 import axios from 'axios';
-import { isAuth } from '../../utils/auth';
 import { fakeAuth } from './PrivateRoute';
 import { makeStyles } from '@material-ui/core/styles';
-import { Route, Redirect } from 'react-router';
+import { Redirect } from 'react-router';
 import { toast } from 'react-toastify';
 
 const useStyles = makeStyles(theme => ({

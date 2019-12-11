@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  BrowserRouter,
   Route,
   Switch
 } from 'react-router-dom';
@@ -14,6 +13,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import Movies from './components/Movies/Movies';
 import Cinemas from './components/Cinemas/Cinemas';
+
+import './content/styles/styles.css';
 
 export default function () {
   return (

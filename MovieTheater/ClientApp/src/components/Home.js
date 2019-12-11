@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -12,8 +12,6 @@ import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
 import CategoryIcon from '@material-ui/icons/Category';
 import MovieFilterIcon from '@material-ui/icons/MovieFilter';
 import TheaterIcon from '@material-ui/icons/Theaters';
@@ -40,7 +38,7 @@ const useStyles = makeStyles(theme => ({
 
 
 
-const Home = () => {
+const Home = (props) => {
   const classes = useStyles();
   const [state, setState] = React.useState({
     top: false,
@@ -48,6 +46,16 @@ const Home = () => {
     bottom: false,
     right: false,
   });
+
+  useEffect(() => {
+    if (window.location.pathname === '/') {
+      if (fakeAuth.isAuthenticated) {
+        props.history.push('/categories');
+      } else {
+        props.history.push('/login');
+      }
+    }
+  })
 
   const toggleDrawer = (side, open) => event => {
     if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -65,12 +73,6 @@ const Home = () => {
       onKeyDown={toggleDrawer(side, false)}
     >
       <List>
-        {/* {['Categories', 'Movies', 'Reviews', 'Quotes'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))} */}
         <ListItem component={Link} to="/categories" button>
           <ListItemIcon><CategoryIcon /></ListItemIcon>
           <ListItemText primary="Categories" />
@@ -90,32 +92,6 @@ const Home = () => {
     </div>
   );
 
-  const fullList = side => (
-    <div
-      className={classes.fullList}
-      role="presentation"
-      onClick={toggleDrawer(side, false)}
-      onKeyDown={toggleDrawer(side, false)}
-    >
-      <List>
-        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-    </div>
-  );
   return (
     <div className={classes.root}>
       <AppBar position="static">

@@ -6,9 +6,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import _ from 'lodash';
 import { Formik, Form } from 'formik';
-import { categoryFormValidation } from '../../utils/validation';
 import { TextField } from '@material-ui/core';
-import { createCategory, editCategory, createMovie, editMovie, deleteMovie } from '../../utils/networkFunctions';
+import { createMovie, editMovie, deleteMovie } from '../../utils/networkFunctions';
 import { toast } from 'react-toastify';
 
 export default function MovieForm({ movie, onCancel, onSubmit, updateCategories }) {

@@ -1,18 +1,12 @@
 import React from 'react';
-import Fab from '@material-ui/core/Fab';
-import AddIcon from '@material-ui/icons/Add';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
-import ReviewForm from "../Reviews/ReviewForm.js";
-import _ from 'lodash';
 import { makeStyles } from "@material-ui/core/styles";
-import MovieForm from "../Movies/MovieForm.js";
 import EditIcon from '@material-ui/icons/Edit';
-import QuotesForm from "../Quotes/QuotesForm.js";
 import { Grid, Typography, IconButton } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
@@ -21,15 +15,33 @@ const useStyles = makeStyles(theme => ({
 		maxWidth: 360,
 	},
 	card: {
-		width: 300
+		width: 300,
+		height: 450,
+		[theme.breakpoints.down('sm')]: {
+			width: 200,
+			height: 330
+		},
 	},
 	media: {
 		height: 200,
+		[theme.breakpoints.down('sm')]: {
+			height: 120,
+			fontSize: 50
+		},
+	},
+	movieTitle: {
+		whiteSpace: 'nowrap',
+		[theme.breakpoints.down('sm')]: {
+			fontSize: '1.6rem'
+		},
 	},
 	description: {
 		textAlign: 'justify',
 		height: 75,
-		overflowY: 'auto'
+		overflowY: 'auto',
+		[theme.breakpoints.down('sm')]: {
+			height: 50,
+		},
 	},
 	pageControls: {
 		margin: 0,
@@ -56,7 +68,7 @@ export default function Movie({ movie, showReviewForm, showMovieForm, showQuotes
 						title={movie.title}
 					/>
 					<CardContent>
-						<Typography gutterBottom variant="h4" component="h2">
+						<Typography className={classes.movieTitle} gutterBottom variant="h4" component="h2">
 							{movie.title}
 						</Typography>
 						<Typography gutterBottom variant="subtitle1" component="p">
